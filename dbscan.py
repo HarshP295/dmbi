@@ -7,7 +7,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.impute import SimpleImputer
+from google.colab import files  # ✅ for file upload in Colab
 
+# --------------------------------------------------------------------------------
+# --- FILE UPLOAD (Colab) ---
+# --------------------------------------------------------------------------------
+print("📂 Please upload your CSV dataset (e.g., Iris.csv)...")
+uploaded = files.upload()
+
+# Get the uploaded file name
+DATASET_FILE = list(uploaded.keys())[0]
+print(f"✅ Successfully uploaded: {DATASET_FILE}")
 
 # --------------------------------------------------------------------------------
 # --- CONFIGURATION: Change these variables for a new dataset ---
@@ -15,7 +25,7 @@ from sklearn.impute import SimpleImputer
 
 
 # SCENARIO 1: Iris Dataset (DBSCAN often separates 2-3 clusters, but tuning is key)
-DATASET_FILE = 'Iris.csv'
+
 FEATURES_TO_DROP = ['Id', 'Species'] # Drop ID and the known label
 DBSCAN_EPS = 0.5
 DBSCAN_MIN_SAMPLES = 5
@@ -26,7 +36,7 @@ VISUALIZATION_FEATURE_2 = 'PetalWidthCm'
 
 
 # # SCENARIO 2: Mall Customer Dataset (Best parameters for density-based segmentation)
-# DATASET_FILE = 'Mall_Customers.csv'
+
 # FEATURES_TO_DROP = ['CustomerID', 'Gender', 'Age'] # Focus on Income and Score
 # DBSCAN_EPS = 0.35 # Requires a smaller epsilon due to feature scaling
 # DBSCAN_MIN_SAMPLES = 4
@@ -168,9 +178,3 @@ try:
    
 except Exception as e:
     print(f"\nError during visualization: {e}")
-
-
-
-
-
-

@@ -1,138 +1,89 @@
-
-
+# --------------------------------------------------------------
+# 🌸 Decision Tree Classifier (Iris Dataset, Colab-Ready Version)
+# --------------------------------------------------------------
 
 import pandas as pd
-from sklearn.model_selection import train_test_split
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import numpy as np
-from sklearn.tree import plot_tree
+from sklearn.model_selection import train_test_split
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
 import matplotlib.pyplot as plt
+from google.colab import files  # ✅ For interactive upload
+
+# --- 1. Upload the Iris dataset file ---
+print("📂 Please upload your Iris dataset (e.g., Iris.csv)...")
+uploaded = files.upload()
+
+# Automatically grab the uploaded filename
+DATASET_FILE = list(uploaded.keys())[0]
+print(f"✅ File '{DATASET_FILE}' uploaded successfully.\n")
 
 
-# --- CONFIGURATION: Change these for a new dataset ---
-# ⚠️ 1. Change the file name
-DATASET_FILE = 'Iris.csv'
+# --- 2. Configuration ---
+TARGET_COLUMN = 'Species'   # Label column
+ID_COLUMN_TO_DROP = 'Id'    # Column to drop (if exists)
 
 
-# ⚠️ 2. Change the name of the target/label column
-TARGET_COLUMN = 'Species' # Change this to your new target column name (e.g., 'Target', 'Diagnosis')
+# --- 3. Load and preprocess data ---
+print("🔍 Loading dataset...")
+df = pd.read_csv(DATASET_FILE)
+print(f"✅ Loaded '{DATASET_FILE}' successfully with shape {df.shape}\n")
 
-
-# ⚠️ 3. Change the name of the unique ID column to drop (or set to None if no ID column exists)
-ID_COLUMN_TO_DROP = 'Id' # Change this to the ID column (or set to None)
-# --- END CONFIGURATION ---
-
-
-
-
-# --- 1. Preprocess data. Split data into train and test set ---
-
-
-# Load the dataset
-print("Loading data...")
-try:
-    df = pd.read_csv(DATASET_FILE)
-    print(f"Successfully loaded '{DATASET_FILE}'.")
-except FileNotFoundError:
-    print(f"Error: '{DATASET_FILE}' not found. Make sure the file is in the same directory.")
-    exit()
-
-
-# Drop the specified ID column if it exists
-if ID_COLUMN_TO_DROP and ID_COLUMN_TO_DROP in df.columns:
-    df = df.drop(ID_COLUMN_TO_DROP, axis=1)
-    print(f"Dropped ID column: '{ID_COLUMN_TO_DROP}'")
+# Drop ID column if it exists
+if ID_COLUMN_TO_DROP in df.columns:
+    df.drop(ID_COLUMN_TO_DROP, axis=1, inplace=True)
+    print(f"🗑️ Dropped ID column: '{ID_COLUMN_TO_DROP}'")
 else:
-    print("No specified ID column to drop, or column not found.")
+    print("ℹ️ No ID column found or nothing to drop.\n")
 
-
-
-
-# Separate features (X) and target (y)
-# Features (X) will now be all columns *except* the target column
+# Split into features (X) and target (y)
 try:
     X = df.drop(TARGET_COLUMN, axis=1)
     y = df[TARGET_COLUMN]
-    print(f"Features set (X) columns: {X.columns.tolist()}")
-    print(f"Target variable (y): '{TARGET_COLUMN}'")
+    print(f"📊 Features: {list(X.columns)}")
+    print(f"🎯 Target column: '{TARGET_COLUMN}'\n")
 except KeyError:
-    print(f"Error: Target column '{TARGET_COLUMN}' not found in the dataset.")
+    print(f"❌ Error: Target column '{TARGET_COLUMN}' not found in dataset.")
     exit()
 
 
-# Split the data into training (80%) and testing (20%) sets
-# random_state ensures reproducibility
-print("Splitting data into 80% training and 20% testing...")
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+# --- 4. Train-Test Split ---
+print("✂️ Splitting data into 80% train and 20% test...")
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42
+)
+print(f"✅ X_train: {X_train.shape}, X_test: {X_test.shape}\n")
 
 
-# Display shapes of the split data
-print(f"X_train shape: {X_train.shape}")
-print(f"X_test shape: {X_test.shape}")
-print("-" * 50)
-
-
-# --- 2. Build a Classification model using the inbuilt library function on training data ---
-
-
-# Initialize the Decision Tree Classifier
+# --- 5. Train Decision Tree ---
+print("🌳 Training Decision Tree Classifier...")
 dt_model = DecisionTreeClassifier(random_state=42)
-
-
-# Train the model on the training data
-print("Training Decision Tree Classifier...")
 dt_model.fit(X_train, y_train)
-print("Training complete.")
-print("-" * 50)
+print("✅ Training complete.\n")
 
 
-# Make predictions on the test set
+# --- 6. Evaluate Model ---
 y_pred = dt_model.predict(X_test)
-
-
-# --- 3. Calculate metrics based on test data using an inbuilt function ---
-
-
-# Calculate Accuracy
 accuracy = accuracy_score(y_test, y_pred)
-print(f"Decision Tree Accuracy: {accuracy:.4f}")
 
-
-# Generate a Classification Report (Precision, Recall, F1-Score)
-print("\nClassification Report:")
+print(f"📈 Accuracy: {accuracy:.4f}\n")
+print("🧾 Classification Report:")
 print(classification_report(y_test, y_pred))
+print("\n🔢 Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+print("\n✅ Model evaluation done.\n")
 
 
-# Generate Confusion Matrix
-conf_matrix = confusion_matrix(y_test, y_pred)
-print("Confusion Matrix:")
-print(conf_matrix)
-
-
-# Interpretation of Results
-print("\n--- Model Evaluation Summary ---")
-print(f"The Decision Tree achieved an accuracy of {accuracy:.4f}.")
-
-
-
-
-# 7. Visualize the Tree (Optional but recommended)
+# --- 7. Visualize Decision Tree ---
 plt.figure(figsize=(20, 10))
-# Get feature names from X columns (This is now fully dynamic)
 feature_names = X.columns.tolist()
-# Get class names from the model (This is also fully dynamic)
-class_names = dt_model.classes_.astype(str).tolist() # Convert class names to string for plot_tree
-
+class_names = dt_model.classes_.astype(str).tolist()
 
 plot_tree(dt_model, feature_names=feature_names, class_names=class_names, filled=True)
-plt.title(f"Decision Tree Visualization for {DATASET_FILE}")
-# Save the plot to a file
+plt.title(f"Decision Tree Visualization - {DATASET_FILE}")
 PLOT_FILENAME = "decision_tree_output.png"
 plt.savefig(PLOT_FILENAME)
+plt.show()
 
-
-
-
-print(f"Decision Tree plot saved as '{PLOT_FILENAME}'")
-
+print(f"🖼️ Decision Tree plot saved as '{PLOT_FILENAME}'\n")
+print("✅ All steps completed successfully.")
